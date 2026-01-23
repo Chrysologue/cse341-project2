@@ -1,12 +1,15 @@
 const express = require('express')
 const expenseRoute = require('./routes/index')
 require('dotenv').config()
+const swaggerUi = require('swagger-ui-express')
+const swaggerDoc = require('./swagger.json')
 
 const app = express()
 const port = process.env.PORT
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc))
 
 app.use('/expenses', expenseRoute)
 
