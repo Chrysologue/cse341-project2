@@ -7,9 +7,13 @@ const doc = {
   info: {
     title: 'Expense tracker API',
     description: 'API documentation for tracking expenses',
+    version: '1.0.0',
   },
-  host: isProd ? process.env.SWAGGER_HOST : 'localhost:7700',
-  schemes: [isProd ? 'https' : 'http'],
+  host: isProd
+    ? process.env.SWAGGER_HOST
+    : `localhost:${process.env.PORT || 7700}`,
+  schemes: ['http', 'https'],
+  basePath: '/',
 }
 
 const outputFile = './swagger.json'
