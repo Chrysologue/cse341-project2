@@ -9,7 +9,7 @@ const doc = {
     description: 'API documentation for tracking expenses',
   },
   host: isProd ? process.env.SWAGGER_HOST : `localhost:7700`,
-  schemes: [isProd ? 'https' : 'https'],
+  schemes: [isProd ? 'https' : 'http'],
 }
 
 const outputFile = './swagger.json'
