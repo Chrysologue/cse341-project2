@@ -137,6 +137,89 @@ const swaggerDoc = {
         },
       },
     },
+    '/users/': {
+      get: {
+        description: 'Get all users',
+        responses: {
+          200: { description: 'List of all users' },
+          404: { description: 'No users found' },
+        },
+      },
+      post: {
+        description: 'Create a new user',
+        parameters: [
+          {
+            name: 'body',
+            in: 'body',
+            required: true,
+            schema: { $ref: '#/definitions/User' },
+          },
+        ],
+        responses: {
+          201: { description: 'User created successfully' },
+          400: { description: 'Validation error' },
+        },
+      },
+    },
+    '/users/{id}': {
+      get: {
+        description: 'Get user by ID',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            type: 'string',
+            description: 'User ID',
+          },
+        ],
+        responses: {
+          200: { description: 'User details' },
+          400: { description: 'Invalid user ID' },
+          404: { description: 'User not found' },
+        },
+      },
+      put: {
+        description: 'Update a user',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            type: 'string',
+            description: 'User ID',
+          },
+          {
+            name: 'body',
+            in: 'body',
+            required: true,
+            schema: { $ref: '#/definitions/User' },
+          },
+        ],
+        responses: {
+          200: { description: 'User updated successfully' },
+          400: { description: 'Validation error' },
+          404: { description: 'User not found' },
+        },
+      },
+      delete: {
+        description: 'Delete a user',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            type: 'string',
+            description: 'User ID',
+          },
+        ],
+        responses: {
+          200: { description: 'User deleted successfully' },
+          400: { description: 'Invalid user ID' },
+          404: { description: 'User not found' },
+        },
+      },
+    },
   },
   definitions: {
     Expense: {
@@ -170,6 +253,27 @@ const swaggerDoc = {
           format: 'date-time',
           example: '2025-01-28T10:00:00Z',
         },
+        location: {
+          type: 'string',
+          example: 'Antananarivo',
+        },
+      },
+    },
+    User: {
+      type: 'object',
+      required: ['name', 'email'],
+      properties: {
+        name: { type: 'string', example: 'Alice' },
+        email: { type: 'string', example: 'alice@example.com' },
+        avatar: { type: 'string', example: 'https://example.com/avatar.png' },
+        phoneNumber: { type: 'string', example: '+261 34 12 345 67' },
+        dateOfBirth: {
+          type: 'string',
+          format: 'date-time',
+          example: '1990-01-01T00:00:00Z',
+        },
+        role: { type: 'string', enum: ['user', 'admin'], example: 'user' },
+        isVerified: { type: 'boolean', example: false },
       },
     },
   },
