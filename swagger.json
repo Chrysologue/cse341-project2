@@ -7,13 +7,11 @@
   },
   "host": "localhost:7700",
   "basePath": "/",
-  "schemes": [
-    "http"
-  ],
+  "schemes": ["http"],
   "paths": {
     "/": {
       "get": {
-        "description": "",
+        "description": "Welcome endpoint",
         "responses": {
           "200": {
             "description": "OK"
@@ -23,69 +21,149 @@
     },
     "/expenses/": {
       "get": {
-        "description": "",
+        "description": "Get all expenses",
         "responses": {
-          "default": {
-            "description": ""
+          "200": {
+            "description": "List of all expenses"
+          },
+          "404": {
+            "description": "No expenses found"
           }
         }
       },
       "post": {
-        "description": "",
+        "description": "Create a new expense",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Expense"
+            }
+          }
+        ],
         "responses": {
-          "default": {
-            "description": ""
+          "201": {
+            "description": "Expense created successfully"
+          },
+          "400": {
+            "description": "Validation error"
           }
         }
       }
     },
     "/expenses/{id}": {
       "get": {
-        "description": "",
+        "description": "Get expense by ID",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "Expense ID"
           }
         ],
         "responses": {
-          "default": {
-            "description": ""
+          "200": {
+            "description": "Expense details"
+          },
+          "400": {
+            "description": "Invalid expense ID"
+          },
+          "404": {
+            "description": "Expense not found"
           }
         }
       },
       "put": {
-        "description": "",
+        "description": "Update an expense",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "Expense ID"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Expense"
+            }
           }
         ],
         "responses": {
-          "default": {
-            "description": ""
+          "200": {
+            "description": "Expense updated successfully"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Expense not found"
           }
         }
       },
       "delete": {
-        "description": "",
+        "description": "Delete an expense",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "Expense ID"
           }
         ],
         "responses": {
-          "default": {
-            "description": ""
+          "200": {
+            "description": "Expense deleted successfully"
+          },
+          "400": {
+            "description": "Invalid expense ID"
+          },
+          "404": {
+            "description": "Expense not found"
           }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Expense": {
+      "type": "object",
+      "required": ["title", "amount", "category", "paymentMethod", "date"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "example": "Lunch"
+        },
+        "amount": {
+          "type": "number",
+          "example": 15.99
+        },
+        "category": {
+          "type": "string",
+          "enum": ["Food", "Transport", "Rent", "Utilities", "Other"],
+          "example": "Food"
+        },
+        "paymentMethod": {
+          "type": "string",
+          "enum": ["Cash", "Card", "Mobile Money"],
+          "example": "Card"
+        },
+        "note": {
+          "type": "string",
+          "example": "Lunch at restaurant"
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2025-01-28T10:00:00Z"
         }
       }
     }
