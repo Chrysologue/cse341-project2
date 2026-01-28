@@ -272,8 +272,6 @@ const swaggerDoc = {
           format: 'date-time',
           example: '1990-01-01T00:00:00Z',
         },
-        role: { type: 'string', enum: ['user', 'admin'], example: 'user' },
-        isVerified: { type: 'boolean', example: false },
       },
     },
   },
