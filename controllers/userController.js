@@ -1,4 +1,3 @@
-const { connectToDb } = require('../database/db')
 const User = require('../models/User')
 const mongoose = require('mongoose')
 
@@ -6,7 +5,6 @@ const userCont = {}
 
 userCont.getAllUsers = async function (req, res) {
   try {
-    await connectToDb()
     const allUsers = await User.find()
     if (allUsers.length === 0) {
       console.log('No users found')
@@ -22,7 +20,6 @@ userCont.getAllUsers = async function (req, res) {
 
 userCont.createUser = async (req, res) => {
   try {
-    await connectToDb()
     const insertedUser = await User.create(req.body)
     res.status(201).json({
       message: 'User created successfully',

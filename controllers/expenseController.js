@@ -1,4 +1,3 @@
-const { connectToDb } = require('../database/db')
 const Expense = require('../models/Expense')
 const mongoose = require('mongoose')
 
@@ -6,11 +5,9 @@ const expenseCont = {}
 
 expenseCont.createExpense = async function (req, res) {
   try {
-    await connectToDb()
-    const dummyUserId = '65af2c8e9f3a2c0012ab45cd'
     const newExpense = await Expense.create({
       ...req.body,
-      userId: dummyUserId,
+      userId: req.user.id,
     })
     console.log('Expense inserted successfully')
     res.status(201).json({
@@ -27,8 +24,7 @@ expenseCont.createExpense = async function (req, res) {
 
 expenseCont.getAllExpenses = async function (req, res) {
   try {
-    await connectToDb()
-    const allExpenses = await Expense.find()
+    const allExpenses = await Expense.find({ userId: req.user.id })
     if (allExpenses.length === 0) {
       return res.status(404).json({ error: 'No expense found' })
     }
@@ -44,11 +40,12 @@ expenseCont.getAllExpenses = async function (req, res) {
 
 expenseCont.findExpenseById = async (req, res) => {
   try {
-    const id = req.params.id
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    const expenseId = req.params.id
+    const userId = req.user.id
+    if (!mongoose.Types.ObjectId.isValid(expenseId)) {
       return res.status(400).json({ error: 'Invalid expense id' })
     }
-    const expense = await Expense.findById(id)
+    const expense = await Expense.findOne({ _id: expenseId, userId: userId })
     if (!expense) {
       return res.status(404).json({ error: 'Expense not found' })
     }
@@ -64,19 +61,23 @@ expenseCont.findExpenseById = async (req, res) => {
 
 expenseCont.updateExpense = async function (req, res) {
   try {
-    const id = req.params.id
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    const expenseId = req.params.id
+    const userId = req.user.id
+    if (!mongoose.Types.ObjectId.isValid(expenseId)) {
       return res.status(400).json({ error: 'Invalid expense id' })
     }
-    const toUpdate = { ...req.body }
-    delete toUpdate._id
-    const result = await Expense.findByIdAndUpdate(id, toUpdate, {
+    const expense = await Expense.findById(expenseId)
+    if (!expense) {
+      return res.status(404).json({ error: 'Expense not found' })
+    }
+
+    if (!expense.userId.equals(userId)) {
+      return res.status(403).json({ error: 'Forbidden, cannot update expense' })
+    }
+    const result = await Expense.findByIdAndUpdate(expenseId, req.body, {
       new: true,
       runValidators: true,
     })
-    if (!result) {
-      return res.status(404).json({ error: 'Expense not found' })
-    }
     console.log('Expense updated successfully')
     res.status(200).json({
       message: 'Expense updated successfully',
@@ -92,16 +93,21 @@ expenseCont.updateExpense = async function (req, res) {
 
 expenseCont.deleteExpense = async function (req, res) {
   try {
-    const id = req.params.id
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    const expenseId = req.params.id
+    const userId = req.user.id
+    if (!mongoose.Types.ObjectId.isValid(expenseId)) {
       return res.status(400).json({ error: 'Invalid expense id' })
     }
-    const result = await Expense.findByIdAndDelete(id)
-    if (!result) {
-      return res.status(404).json({ error: 'Expense not found' })
+    const deletedExpense = await Expense.findOneAndDelete({
+      _id: expenseId,
+      userId: userId,
+    })
+    if (!deletedExpense) {
+      return res.status(404).json({ error: 'Expense not found or forbidden' })
     }
     res.status(200).json({
       message: 'Expense deleted successfully',
+      deletedExpense,
     })
   } catch (e) {
     console.log(e.message)

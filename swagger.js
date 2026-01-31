@@ -6,276 +6,188 @@ const isProd = process.env.NODE_ENV === 'production'
 const swaggerDoc = {
   swagger: '2.0',
   info: {
-    title: 'Expense tracker API',
-    description: 'API documentation for tracking expenses',
+    title: 'Expense Tracker API',
+    description:
+      'API documentation for tracking expenses with Google OAuth and JWT authentication',
     version: '1.0.0',
   },
-  host: isProd ? process.env.SWAGGER_HOST : 'localhost:7700',
+
+  host: isProd
+    ? process.env.SWAGGER_HOST
+    : `localhost:${process.env.PORT || 7700}`,
+
   basePath: '/',
   schemes: [isProd ? 'https' : 'http'],
+
+  /* ============================
+     🔐 JWT AUTH CONFIG (IMPORTANT)
+     ============================ */
+  securityDefinitions: {
+    BearerAuth: {
+      type: 'apiKey',
+      name: 'Authorization',
+      in: 'header',
+      description: 'Enter JWT like: Bearer <your_token>',
+    },
+  },
+
+  /* Apply JWT globally */
+  security: [
+    {
+      BearerAuth: [],
+    },
+  ],
+
   paths: {
+    /* ===== PUBLIC ROUTES ===== */
     '/': {
       get: {
+        security: [],
         description: 'Welcome endpoint',
         responses: {
-          200: {
-            description: 'OK',
-          },
+          200: { description: 'OK' },
         },
       },
     },
+
+    '/auth/google': {
+      get: {
+        security: [],
+        description: 'Redirect user to Google OAuth login',
+        responses: {
+          302: { description: 'Redirect to Google login page' },
+        },
+      },
+    },
+
+    '/auth/google/callback': {
+      get: {
+        security: [],
+        description: 'Google OAuth callback. Returns JWT token and user info',
+        responses: {
+          200: { description: 'Login successful' },
+          401: { description: 'Unauthorized' },
+          500: { description: 'Internal server error' },
+        },
+      },
+    },
+
+    /* ===== EXPENSES (PROTECTED) ===== */
     '/expenses/': {
       get: {
-        description: 'Get all expenses',
+        description: 'Get all expenses (JWT required)',
         responses: {
-          200: {
-            description: 'List of all expenses',
-          },
-          404: {
-            description: 'No expenses found',
-          },
+          200: { description: 'Expenses retrieved' },
+          401: { description: 'Unauthorized' },
         },
       },
       post: {
-        description: 'Create a new expense',
+        description: 'Create new expense (JWT required)',
         parameters: [
           {
             name: 'body',
             in: 'body',
             required: true,
-            schema: {
-              $ref: '#/definitions/Expense',
-            },
+            schema: { $ref: '#/definitions/Expense' },
           },
         ],
         responses: {
-          201: {
-            description: 'Expense created successfully',
-          },
-          400: {
-            description: 'Validation error',
-          },
+          201: { description: 'Expense created' },
+          400: { description: 'Validation error' },
+          401: { description: 'Unauthorized' },
         },
       },
     },
+
     '/expenses/{id}': {
       get: {
-        description: 'Get expense by ID',
+        description: 'Get expense by ID (JWT required)',
         parameters: [
           {
             name: 'id',
             in: 'path',
             required: true,
             type: 'string',
-            description: 'Expense ID',
           },
         ],
         responses: {
-          200: {
-            description: 'Expense details',
-          },
-          400: {
-            description: 'Invalid expense ID',
-          },
-          404: {
-            description: 'Expense not found',
-          },
+          200: { description: 'Expense found' },
+          400: { description: 'Invalid ID' },
+          404: { description: 'Not found' },
+          401: { description: 'Unauthorized' },
         },
       },
+
       put: {
-        description: 'Update an expense',
+        description: 'Update expense (JWT required)',
         parameters: [
           {
             name: 'id',
             in: 'path',
             required: true,
             type: 'string',
-            description: 'Expense ID',
           },
           {
             name: 'body',
             in: 'body',
             required: true,
-            schema: {
-              $ref: '#/definitions/Expense',
-            },
+            schema: { $ref: '#/definitions/Expense' },
           },
         ],
         responses: {
-          200: {
-            description: 'Expense updated successfully',
-          },
-          400: {
-            description: 'Validation error',
-          },
-          404: {
-            description: 'Expense not found',
-          },
+          200: { description: 'Expense updated' },
+          403: { description: 'Forbidden' },
+          404: { description: 'Not found' },
+          401: { description: 'Unauthorized' },
         },
       },
+
       delete: {
-        description: 'Delete an expense',
+        description: 'Delete expense (JWT required)',
         parameters: [
           {
             name: 'id',
             in: 'path',
             required: true,
             type: 'string',
-            description: 'Expense ID',
           },
         ],
         responses: {
-          200: {
-            description: 'Expense deleted successfully',
-          },
-          400: {
-            description: 'Invalid expense ID',
-          },
-          404: {
-            description: 'Expense not found',
-          },
-        },
-      },
-    },
-    '/users/': {
-      get: {
-        description: 'Get all users',
-        responses: {
-          200: { description: 'List of all users' },
-          404: { description: 'No users found' },
-        },
-      },
-      post: {
-        description: 'Create a new user',
-        parameters: [
-          {
-            name: 'body',
-            in: 'body',
-            required: true,
-            schema: { $ref: '#/definitions/User' },
-          },
-        ],
-        responses: {
-          201: { description: 'User created successfully' },
-          400: { description: 'Validation error' },
-        },
-      },
-    },
-    '/users/{id}': {
-      get: {
-        description: 'Get user by ID',
-        parameters: [
-          {
-            name: 'id',
-            in: 'path',
-            required: true,
-            type: 'string',
-            description: 'User ID',
-          },
-        ],
-        responses: {
-          200: { description: 'User details' },
-          400: { description: 'Invalid user ID' },
-          404: { description: 'User not found' },
-        },
-      },
-      put: {
-        description: 'Update a user',
-        parameters: [
-          {
-            name: 'id',
-            in: 'path',
-            required: true,
-            type: 'string',
-            description: 'User ID',
-          },
-          {
-            name: 'body',
-            in: 'body',
-            required: true,
-            schema: { $ref: '#/definitions/User' },
-          },
-        ],
-        responses: {
-          200: { description: 'User updated successfully' },
-          400: { description: 'Validation error' },
-          404: { description: 'User not found' },
-        },
-      },
-      delete: {
-        description: 'Delete a user',
-        parameters: [
-          {
-            name: 'id',
-            in: 'path',
-            required: true,
-            type: 'string',
-            description: 'User ID',
-          },
-        ],
-        responses: {
-          200: { description: 'User deleted successfully' },
-          400: { description: 'Invalid user ID' },
-          404: { description: 'User not found' },
+          200: { description: 'Expense deleted' },
+          404: { description: 'Not found' },
+          401: { description: 'Unauthorized' },
         },
       },
     },
   },
+
+  /* ===== MODELS ===== */
   definitions: {
     Expense: {
       type: 'object',
       required: ['title', 'amount', 'category', 'paymentMethod', 'date'],
       properties: {
-        title: {
-          type: 'string',
-          example: 'Lunch',
-        },
-        amount: {
-          type: 'number',
-          example: 15.99,
-        },
+        title: { type: 'string', example: 'Lunch' },
+        amount: { type: 'number', example: 12.5 },
         category: {
           type: 'string',
           enum: ['Food', 'Transport', 'Rent', 'Utilities', 'Other'],
-          example: 'Food',
         },
         paymentMethod: {
           type: 'string',
           enum: ['Cash', 'Card', 'Mobile Money'],
-          example: 'Card',
         },
-        note: {
-          type: 'string',
-          example: 'Lunch at restaurant',
-        },
+        note: { type: 'string', example: 'Lunch with friends' },
         date: {
           type: 'string',
           format: 'date-time',
           example: '2025-01-28T10:00:00Z',
         },
-        location: {
-          type: 'string',
-          example: 'Antananarivo',
-        },
-      },
-    },
-    User: {
-      type: 'object',
-      required: ['name', 'email'],
-      properties: {
-        name: { type: 'string', example: 'Alice' },
-        email: { type: 'string', example: 'alice@example.com' },
-        avatar: { type: 'string', example: 'https://example.com/avatar.png' },
-        phoneNumber: { type: 'string', example: '+261 34 12 345 67' },
-        dateOfBirth: {
-          type: 'string',
-          format: 'date-time',
-          example: '1990-01-01T00:00:00Z',
-        },
+        location: { type: 'string', example: 'Antananarivo' },
       },
     },
   },
 }
 
 fs.writeFileSync('./swagger.json', JSON.stringify(swaggerDoc, null, 2))
-console.log('swagger.json generated successfully')
+console.log('✅ swagger.json generated successfully')
